@@ -12,8 +12,8 @@ class WelcomeFrame:
                   text=f"¡Welcome {username}!").pack(pady=20)
 
         user_data = db_manager.get_user(username)
-        if user_data and 'image_path' in user_data:
-            image_path = user_data['image_path']
+        if user_data and "image_path" in user_data:
+            image_path = user_data["image_path"]
             try:
                 image = Image.open(image_path)
                 image = image.resize((200, 200))

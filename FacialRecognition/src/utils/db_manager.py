@@ -7,12 +7,22 @@ import numpy as np
 
 class DBManager:
     def __init__(self, db_file: str, images_dir: str):
+        """
+        Initializes the database manager.
+
+        Args:
+            db_file (str): Path to the JSON database file
+            images_dir (str): Directory path where user profile images will be stored
+        """
         self.db_file = db_file
         self.images_dir = images_dir
         self._ensure_directories()
         self.users_db = self._load_database()
 
     def _ensure_directories(self) -> None:
+        """
+        Creates necessary directories for database and images if they don't exist.
+        """
         if not os.path.exists(self.images_dir):
             os.makedirs(self.images_dir)
 
@@ -21,6 +31,13 @@ class DBManager:
             os.makedirs(db_dir)
 
     def _load_database(self) -> Dict[str, Any]:
+        """
+        Loads the user database from JSON file.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing user data, empty if file doesn't exist
+                           or can't be read
+        """
         if os.path.exists(self.db_file):
             try:
                 with open(self.db_file, 'r') as f:
@@ -47,6 +64,14 @@ class DBManager:
 
     def save_user(self, username: str, face_encoding: np.ndarray,
                   original_image_path: str) -> bool:
+        """
+        Saves a new user to the database.
+
+        Args:
+            username (str): Username of the new user
+            face_encoding (np.ndarray): Facial encoding data
+            original_image_path (str): Path to user's profile image
+        """
         try:
             saved_image_path = self._save_user_image(original_image_path, username)
             if not saved_image_path:
@@ -64,6 +89,16 @@ class DBManager:
             return False
 
     def _save_user_image(self, original_path: str, username: str) -> Optional[str]:
+        """
+        Saves user's profile image to images directory.
+
+        Args:
+            original_path (str): Path to original image file
+            username (str): Username to associate with image
+
+        Returns:
+            Optional[str]: Path where image was saved, None if save failed
+        """
         try:
             extension = os.path.splitext(original_path)[1]
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -76,63 +111,5 @@ class DBManager:
             print(f"Error saving user image: {e}")
             return None
 
-    def update_user(self, username: str, data: Dict[str, Any]) -> bool:
-        if username not in self.users_db:
-            return False
-
-        try:
-            self.users_db[username].update(data)
-            return self.save_database()
-        except Exception as e:
-            print(f"Error updating user: {e}")
-            return False
-
-    def delete_user(self, username: str) -> bool:
-        if username not in self.users_db:
-            return False
-
-        try:
-            image_path = self.users_db[username].get('image_path')
-            if image_path and os.path.exists(image_path):
-                os.remove(image_path)
-
-            del self.users_db[username]
-            return self.save_database()
-        except Exception as e:
-            print(f"Error deleting user: {e}")
-            return False
-
     def get_all_users(self) -> Dict[str, Any]:
         return self.users_db
-
-    def backup_database(self, backup_path: str) -> bool:
-        try:
-            shutil.copy2(self.db_file, backup_path)
-
-            images_backup_dir = os.path.join(
-                os.path.dirname(backup_path),
-                'images_backup'
-            )
-            if os.path.exists(images_backup_dir):
-                shutil.rmtree(images_backup_dir)
-            shutil.copytree(self.images_dir, images_backup_dir)
-
-            return True
-        except Exception as e:
-            print(f"Error creating backup: {e}")
-            return False
-
-    def verify_database_integrity(self) -> List[str]:
-        errors = []
-
-        for username, data in self.users_db.items():
-            required_fields = ['password', 'face_encoding', 'image_path']
-            for field in required_fields:
-                if field not in data:
-                    errors.append(f"Missing {field} for user {username}")
-
-            image_path = data.get('image_path')
-            if image_path and not os.path.exists(image_path):
-                errors.append(f"Missing image file for user {username}")
-
-        return errors
