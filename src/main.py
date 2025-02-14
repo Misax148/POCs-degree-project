@@ -7,6 +7,10 @@ from src import config
 
 
 def create_directories():
+    """
+    Creates necessary directories for application data.
+    Ensures existence of data, models, and images directories.
+    """
     directories = [
         config.DATA_DIR,
         config.MODELS_DIR,
@@ -18,6 +22,9 @@ def create_directories():
 
 
 def main():
+    """
+    Main application.
+    """
     create_directories()
 
     db_manager = DBManager(config.DB_FILE, config.IMAGES_DIR)

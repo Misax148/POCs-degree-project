@@ -19,6 +19,10 @@ class LoginFrame(ttk.Frame):
                   command=self.facial_login).pack()
 
     def facial_login(self):
+        """
+        Initiates facial recognition login process.
+        Opens camera feed and continuously checks for matching faces.
+        """
         cap = cv2.VideoCapture(0)
         login_window = tk.Toplevel(self)
         login_window.title("Facial Login")

@@ -9,7 +9,7 @@ from ..interfaces.face_recognizer import FaceRecognizer
 class FacialAuthApp:
     def __init__(self, recognizer: FaceRecognizer, db_manager: DBManager):
         self.root = tk.Tk()
-        self.root.title("Sistema de Autenticación Facial")
+        self.root.title("Reconocimiento Facial")
         self.root.geometry("800x600")
 
         self.recognizer = recognizer

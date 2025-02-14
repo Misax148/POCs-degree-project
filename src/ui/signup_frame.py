@@ -41,6 +41,10 @@ class SignupFrame(ttk.Frame):
             self.image_label.image = photo
 
     def register_user(self):
+        """
+        Processes user registration.
+        Validates input, detects face, and saves user data to database.
+        """
         username = self.username_entry.get()
 
         if self.db_manager.user_exists(username):
