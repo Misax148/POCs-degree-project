@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import cv2
+import time
+import numpy as np
 from PIL import Image, ImageTk
 from .welcome_frame import WelcomeFrame
 from ..utils.db_manager import DBManager
@@ -12,11 +14,14 @@ class LoginFrame(ttk.Frame):
         super().__init__(parent)
         self.recognizer = recognizer
         self.db_manager = db_manager
+        self.login_window = None
+        self.verification_history = []
+        self.current_face_matches = {}
         self.setup_ui()
 
     def setup_ui(self):
         ttk.Button(self, text="Facial Login",
-                  command=self.facial_login).pack()
+                   command=self.facial_login).pack()
 
     def facial_login(self):
         """
@@ -30,9 +35,20 @@ class LoginFrame(ttk.Frame):
         video_label = ttk.Label(login_window)
         video_label.pack()
 
+        status_label = ttk.Label(login_window, text="Looking for face...")
+        status_label.pack()
+
+        self.verification_history = []
+        self.current_face_matches = {}
+
+        required_matches = 5
+        tolerance = 0.45
+
         def update_frame():
             ret, frame = cap.read()
             if ret:
+                frame = cv2.resize(frame, (0, 0), fx=0.75, fy=0.75)
+
                 face_locations = self.recognizer.detect_faces(frame)
 
                 for face_location in face_locations:
@@ -42,13 +58,47 @@ class LoginFrame(ttk.Frame):
                 if face_locations:
                     face_encoding = self.recognizer.get_face_encoding(frame)
                     if face_encoding is not None:
+                        best_match = None
+                        lowest_distance = float('inf')
+
+                        # Verificar coincidencias con todos los usuarios
                         for username, user_data in self.db_manager.get_all_users().items():
                             stored_encoding = user_data["face_encoding"]
-                            if self.recognizer.compare_faces(stored_encoding, face_encoding):
-                                cap.release()
-                                login_window.destroy()
-                                self.show_welcome_screen(username)
-                                return
+                            # Calcular distancia directamente
+                            if isinstance(stored_encoding, list):
+                                stored_encoding = np.array(stored_encoding)
+
+                            distance = np.linalg.norm(stored_encoding - face_encoding)
+
+                            # Actualizar el mejor match
+                            if distance < lowest_distance:
+                                lowest_distance = distance
+                                best_match = username
+
+                            # Guardar resultado de verificación
+                            if distance <= tolerance:
+                                if username not in self.current_face_matches:
+                                    self.current_face_matches[username] = 0
+                                self.current_face_matches[username] += 1
+
+                                status_label.config(
+                                    text=f"Verificando: {username} ({self.current_face_matches[username]}/{required_matches})")
+
+                                if self.current_face_matches[username] >= required_matches:
+                                    cap.release()
+                                    login_window.destroy()
+                                    self.show_welcome_screen(username)
+                                    return
+
+                        if lowest_distance <= tolerance:
+                            status_label.config(
+                                text=f"Verificando: {best_match} ({self.current_face_matches.get(best_match, 0)}/{required_matches})")
+                        else:
+                            status_label.config(text=f"Rostro no registrado (distancia: {lowest_distance:.2f})")
+                    else:
+                        status_label.config(text="Buscando rostro...")
+                else:
+                    status_label.config(text="Buscando rostro...")
 
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(cv2image)

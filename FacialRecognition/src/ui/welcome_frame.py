@@ -8,8 +8,7 @@ class WelcomeFrame:
         self.window = tk.Toplevel(parent)
         self.window.title("Welcome")
 
-        ttk.Label(self.window,
-                  text=f"¡Welcome {username}!").pack(pady=20)
+        ttk.Label(self.window, text=f"¡Welcome {username}!").pack(pady=10)
 
         user_data = db_manager.get_user(username)
         if user_data and "image_path" in user_data:
@@ -20,6 +19,12 @@ class WelcomeFrame:
                 photo = ImageTk.PhotoImage(image)
                 img_label = ttk.Label(self.window, image=photo)
                 img_label.image = photo
-                img_label.pack(pady=20)
+                img_label.pack(pady=10)
             except Exception as e:
                 print(f"Error loading image: {e}")
+
+        ttk.Button(
+            self.window,
+            text="Back",
+            command=self.window.destroy
+        ).pack(pady=10)

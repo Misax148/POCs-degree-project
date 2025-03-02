@@ -3,7 +3,6 @@ import numpy as np
 from typing import Optional, Tuple, List
 
 
-# Interface
 class FaceRecognizer(ABC):
     """
     Abstract interface for facial recognition implementations.
