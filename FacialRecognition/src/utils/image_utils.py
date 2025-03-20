@@ -49,3 +49,28 @@ class ImageUtils:
         """
         cv2_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
         return Image.fromarray(cv2_image)
+
+    @staticmethod
+    def enhance_image_for_recognition(image: np.ndarray) -> np.ndarray:
+        """
+        Enhances an image for better face recognition.
+        Applies histogram equalization to improve contrast.
+        """
+        if image is None:
+            return None
+
+        # Convert to grayscale if it's a color image
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+
+        # Apply histogram equalization
+        equalized = cv2.equalizeHist(gray)
+
+        # Convert back to color if the original was color
+        if len(image.shape) == 3:
+            result = cv2.cvtColor(equalized, cv2.COLOR_GRAY2BGR)
+            return result
+
+        return equalized
