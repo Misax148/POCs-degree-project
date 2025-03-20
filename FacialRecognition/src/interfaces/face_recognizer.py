@@ -41,7 +41,7 @@ class FaceRecognizer(ABC):
     @abstractmethod
     def compare_faces(self, known_encoding: np.ndarray,
                       face_encoding_to_check: np.ndarray,
-                      tolerance: float = 0.6) -> bool:
+                      tolerance: float = 0.5) -> bool:
         """
         Compares two face encodings to determine if they are of the same person.
 

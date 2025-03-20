@@ -27,8 +27,7 @@ class DlibRecognizer(FaceRecognizer):
         # ResNet model -> Charge CNN model
         self.face_encoder = dlib.face_recognition_model_v1(recognition_model_path)
 
-        # Valor de tolerancia más estricto por defecto
-        self.default_tolerance = 0.45
+        self.default_tolerance = 0.6
 
     def get_face_encoding(self, image) -> Optional[np.ndarray]:
         """
