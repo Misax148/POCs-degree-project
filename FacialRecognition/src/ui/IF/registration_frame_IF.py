@@ -108,11 +108,9 @@ class RegistrationFrameIF(ttk.Frame):
             messagebox.showerror("Error", "No se detecto ningun rostro en la imagen")
             return
 
-        # Verificar si es un array de numpy o convertirlo
         if not isinstance(face_encoding, np.ndarray):
             face_encoding = np.array(face_encoding)
 
-        # Registrar dimensionalidad en mensaje informativo
         dimension_info = f"Codificacion facial: {len(face_encoding)} dimensiones (InsightFace)"
 
         # Save user to database
